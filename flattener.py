@@ -28,12 +28,11 @@ def generate_deps_set(requirements_txt_file: Path = None, package_names: List[st
     for line in requirements_list:
         package_name: str = line.split('==')[0]
         futures.append(executor.submit(_add_dependencies_recursively, package_name=package_name, dependencies_set=dependencies_set))
-        #_add_dependencies_recursively(package_name, dependencies_set)
 
     concurrent.futures.wait(futures)
     executor.shutdown()
     # remove AWS natively-provided dependencies
-    dependencies_set.difference_update({'aws-cdk', 'boto3', 'docker, botocore'})
+    dependencies_set.difference_update({'aws-cdk', 'boto3', 'docker', 'botocore'})
 
     return dependencies_set
 
