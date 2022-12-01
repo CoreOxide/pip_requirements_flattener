@@ -12,7 +12,7 @@ def generate_deps_set(requirements_txt_file: Path = None, package_names: List[st
     :param requirements_txt_file: a generated or a manually created requirements.txt file.
     :return: A set of recursively resolved dependencies.
     """
-    if not requirements_txt_file and not package_names:
+    if requirements_txt_file is None and package_names is None:
         raise ValueError("must supply either file Path or package name.")
 
     if requirements_txt_file:
@@ -45,16 +45,16 @@ def _add_dependencies_recursively(package_name: str, dependencies_set: Set[str])
     :param dependencies_set: string set of dependencies. must be empty on first call.
     """
     print(f'current dependencies set: {str(dependencies_set)}')
-    rv = subprocess.run(['python', '-m', 'pip', 'show', package_name], capture_output=True)
+    rv = subprocess.run(['python', '-m', 'pip', 'show', package_name], capture_output=True, check=True)
     print(f'adding package {package_name}')
     dependencies_set.add(package_name)
     text_output: str = rv.stdout.decode()
-    for item in text_output.split('\n'):
+    for item in text_output.splitlines():
         if 'Requires' in item:  # if this package has sub-dependencies
-            requirements_list: List[str] = item.split(":")[1].replace(" ", "").split(",")
+            requirements_list: List[str] = item.split(":", maxsplit=1)[1].replace(" ", "").split(",")
             for requirement in requirements_list:
-                if requirement in dependencies_set:  # we have already resolved dependencies for this package
+                if not requirement or requirement in dependencies_set:
                     print(f'package already added - {requirement}, skipping.')
-                    continue
+                    continue  # package has no requirements, or we have already resolved dependencies for this package
                 _add_dependencies_recursively(requirement, dependencies_set)
             break
