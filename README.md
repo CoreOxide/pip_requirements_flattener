@@ -3,4 +3,4 @@ Recursively resolves requirements of Python packages using pip.
 
 Usage:
  ```shell script
-    dependencies_set: Set[str] = generate_deps_set(package_name="requests")
+    dependencies_set: Set[str] = generate_deps_set(package_names=['requests', 'packaging'])
